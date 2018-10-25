@@ -15,8 +15,8 @@ class Db(object):
 
     def create_connection(self):
         try:
-            if Config.APP_SETTINGS == "development":
-                self.conn = psycopg2.connect(database='storemanager')
+            if Config.APP_SETTINGS == "testing":
+                self.conn = psycopg2.connect(database='test_database')
             else:
                 self.conn = psycopg2.connect(
                     database=self.dbName,

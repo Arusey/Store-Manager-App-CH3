@@ -14,7 +14,7 @@ class TestMyUsers(TestAllEndpoints):
     def test_login_success(self):
         '''test for a successful login'''
         response = self.test_client.post("/app/v2/auth/adminlogin",
-                                         date=self.login_admin_credentials,
+                                         data=self.login_admin_credentials,
                                          headers={
                                          'content-type': 'application/json'
                                          })
