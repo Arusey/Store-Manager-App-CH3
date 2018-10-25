@@ -57,3 +57,16 @@ class ModelProduct(Db):
         )
         self.conn.commit()
         self.conn.close()
+    def update(self, id):
+        '''update product details by editing it'''
+        db = Db()
+        self.conn = db.create_connection()
+        db.create_tables()
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """UPDATE products SET name = %s, category = %s, description = %s,
+            currentstock = %s, minimumstock = %s, price = %s""", (self.data["name"],
+            self.data["description"], self.data["category"], self.data["currentstock"], self.data["minimumstock"],
+            self.data["price"],))
+        self.conn.commit()
+        self.conn.close()

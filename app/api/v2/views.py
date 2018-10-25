@@ -177,3 +177,39 @@ class SingleProduct(Resource):
         }))
 
         return message
+
+    @token_required
+    def put(current_user, self, id):
+        '''update details in product'''
+        if current_user and current_user["role"] != "admin":
+            return make_response(jsonify({
+                "Message": "You have to be an admin"
+            }), 403)
+        data = request.get_json()
+        name = data["name"]
+        category = data["category"]
+        description = data["description"]
+        currentstock = data["currentstock"]
+        minimumstock = data["minimumstock"]
+        price = data["price"]
+
+        product = ModelProduct(data)
+        products = product.get()
+
+        if len(products) == 0:
+            return make_response(jsonify(
+            {
+                "Message": "No products have been posted yet"
+            }
+            ), 404)
+
+        for item in products:
+            if int(id) == item["id"]:
+                product.update(id)
+                return make_response(jsonify({
+                    "Message": "product has been updated successfully",
+                    "product": product.get()
+                }), 200)
+        return make_response(jsonify({
+            "Message": "The product does not exist"
+        }), 404)
