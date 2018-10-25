@@ -6,12 +6,14 @@ import jwt
 import datetime
 
 from .models.userModel import AdminModel
+from .models.productModel import ModelProduct
 from .utils import AuthValidate, ProductValidate
 
 def token_required(func):
     '''creates a token'''
     @wraps(func)
     def decorated(*args, **kwargs):
+
         token = None
         current_user = None
         if 'x-access-token' in request.headers:
@@ -20,14 +22,16 @@ def token_required(func):
             return make_response(jsonify({
                                  "Message": "the access token is missing, Login"}, 401))
         try:
-            data = jwt.decode(token, Config.SECRET_KEY)
+            data = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+            print(data)
+            newuser = AdminModel()
+            users = newuser.get()
             for user in users:
+                print(users)
                 if user['email'] == data['email']:
                     current_user = user
-
-        except:
-
-            print(Config.SECRET_KEY)
+        except Exception as e:
+            print(e)
             return make_response(jsonify({
                 "Message": "This token is invalid"
             }, 403))
@@ -71,7 +75,7 @@ class AdminLogin(Resource):
                 "password" : password,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta
                                                 (minutes=5)
-                }, Config.SECRET_KEY)
+                }, Config.SECRET_KEY, algorithm='HS256')
                 return make_response(jsonify({
                             "Message": "user successfully logged in",
 						     "token": token.decode("UTF-8")}), 200)
@@ -79,3 +83,37 @@ class AdminLogin(Resource):
                 "Message": "Login failed, wrong entries"
             }
             ), 403)
+
+
+class Product(Resource):
+    @token_required
+    def post(current_user, self):
+        '''endpoint for posting a product'''
+        if current_user and current_user["role"] != "admin":
+            return make_response(jsonify({
+                "Message": "you must be an admin endpoint"}
+            ), 403)
+        data = request.get_json()
+        if not data:
+            return make_response(jsonify({
+                "Message": "Kindly ensure you have inserted your details"
+            }), 400)
+        ProductValidate.validate_key_products(self, data)
+
+        name = data["name"]
+        category = data["category"]
+        description = data["description"]
+        currentstock = data["currentstock"]
+        minimumstock = data["minimumstock"]
+        price = data["price"]
+
+        product = ModelProduct(data)
+        product.add_product()
+        return make_response(jsonify({
+            "Status": "ok",
+            "Message": "Product posted successfully",
+            "Products": product.get(self)
+        }
+        ), 201)
+
+    

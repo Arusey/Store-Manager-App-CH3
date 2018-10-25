@@ -3,6 +3,7 @@ from validate_email import validate_email
 import re
 
 from .models.userModel import AdminModel
+from .models.productModel import ModelProduct
 
 
 class AuthValidate(object):
@@ -67,3 +68,34 @@ class ProductValidate(object):
         # if data["name"] == "" or data["category"] == "" or data["description"] == "" or data["currentstock"] == "" or data["minimumstock"] == "" or data["price"] == "":
         #     Response = "You have to insert a product stored"
         #     abort(400, Response)
+    def validate_key_products(self, data):
+        myproduct = ModelProduct(data)
+        products = myproduct.get()
+        if not "name" in data:
+            Response = "key name is missing"
+            abort(400, Response)
+        if not "category" in data:
+            Response = "Key category is missing"
+            abort(400, Response)
+        if not "description" in data:
+            Response = "Key description is missing"
+            abort(400, Response)
+        if not "currentstock" in data:
+            Response = "Key currentstock is missing"
+            abort(400, Response)
+        if not "minimumstock" in data:
+            Response = "Key miinimumstock is missing"
+            abort(400, Response)
+        if not "price" in data:
+            Response = "Key price is missing"
+            abort(400, Response)
+        for product in products:
+            if data["name"] == product["name"]:
+                Response = "Product already registered"
+                abort(406, Response)
+        if " " in data["name"]:
+            Response = "Remove space in name"
+            abort(400, Response)
+        if " " in data["category"]:
+            Response = "Remove space in category"
+            abort(400, Response)

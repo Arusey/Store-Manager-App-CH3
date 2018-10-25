@@ -5,7 +5,7 @@ from .databaseModel import Db
 
 class AdminModel(Db):
     """initialize an admin object"""
-    def __init__(self, name, email, password, role):
+    def __init__(self, name=None, email=None, password=None, role=None):
         self.name = name
         self.email = email
         self.password = password
