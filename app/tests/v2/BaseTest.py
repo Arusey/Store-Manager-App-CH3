@@ -25,6 +25,13 @@ class TestAllEndpoints(unittest.TestCase):
                                                 headers={
                                                 'content-type': "application/json"
                                                 })
+        login_admin = self.test_client.post("api/v2/auth/adminlogin",
+                                                data=self.login_admin_credentials,
+                                                headers={
+                                                    'content-type': 'application/json'
+                                                }
+                                                )
+        self.token_for_admin = json.loads(login_admin.data.decode())["token"]
         self.context = self.app.app_context()
         self.context.push()
 

@@ -1,10 +1,10 @@
 from flask import Flask, Blueprint
 from flask_restful import Api, Resource
-from .views import  AdminSignup
+from .views import  AdminSignup, AdminLogin
 '''creates our Blueprint'''
 mydbblue = Blueprint("api", __name__, url_prefix="/api/v2")
 
 api = Api(mydbblue)
 '''includes all our routes and classes'''
 api.add_resource(AdminSignup, '/auth/adminsignup')
-# api.add_resource(SignUp, '/auth/signup')
+api.add_resource(AdminLogin, '/auth/adminlogin')

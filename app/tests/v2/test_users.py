@@ -11,3 +11,13 @@ class TestMyUsers(TestAllEndpoints):
         message = json.loads(response.data)
         self.assertEqual(message["Message"], "user successfully registered")
         self.assertEqual(response.status_code, 201)
+    def test_login_success(self):
+        '''test for a successful login'''
+        response = self.test_client.post("/app/v2/auth/adminlogin",
+                                         date=self.login_admin_credentials,
+                                         headers={
+                                         'content-type': 'application/json'
+                                         })
+        message = json.loads(response.data)
+        self.assertEqual(message["Message"], "user successfully logged in")
+        self.assertEqual(response.status_code, 200)
