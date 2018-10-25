@@ -116,4 +116,23 @@ class Product(Resource):
         }
         ), 201)
 
-    
+    @token_required
+    def get(current_user, self):
+        '''endpoint for getting all products'''
+
+        if current_user:
+            product = ModelProduct()
+            products = product.get()
+            if len(products) == 0:
+                return  make_response(jsonify({
+                    "Message": "No products have been posted yet"
+                }), 404)
+            return make_response(jsonify({
+                "Status": "ok",
+                "Message": "All products fetched successfully",
+                "products": products
+            }
+            ), 200)
+        return make_response(jsonify({
+            "Message": "Please login first"
+        }), 401)
