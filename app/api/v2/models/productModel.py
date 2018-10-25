@@ -48,3 +48,12 @@ class ModelProduct(Db):
             totalproducts.append(singleproduct)
         self.conn.commit()
         return totalproducts
+    def delete(self, id):
+        self.id = id
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "DELETE from products WHERE id = %s",
+            (self.id,)
+        )
+        self.conn.commit()
+        self.conn.close()

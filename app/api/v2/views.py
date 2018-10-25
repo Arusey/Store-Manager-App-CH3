@@ -156,3 +156,24 @@ class SingleProduct(Resource):
         return make_response(jsonify({
             "Message": "This product does not exist"
         }), 404)
+    @token_required
+    def delete(current_user, self, id):
+        '''deletes a selected product'''
+        product = ModelProduct()
+        products = product.get()
+        if current_user["role"] != "admin":
+            return make_response(jsonify({
+                "Message": "You have no authorization to delete a product"
+            }), 403)
+        for item in products:
+            if id == item["id"]:
+                product.delete(id)
+                message = make_response(jsonify({
+                    "message": "Deleted successfully"
+                }), 200)
+                return message
+        message = make_response(jsonify({
+            "Message": "The product selected for deletion does not exist"
+        }))
+
+        return message
