@@ -54,10 +54,7 @@ The following endpoints should be working:
  * Flask-Restful
  * Json Web Tokens
  * Heroku
- * Travis CI
- * Coveralls
- * Code Climate
-  
+ * Postgres
  Acknowldegments
  ===============
  I would like to acknowledge the Andela Bootcamp 33 for facilitating this project
