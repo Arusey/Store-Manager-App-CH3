@@ -55,6 +55,7 @@ The following endpoints should be working:
  * Json Web Tokens
  * Heroku
  * Postgres
+ 
  Acknowldegments
  ===============
  I would like to acknowledge the Andela Bootcamp 33 for facilitating this project
