@@ -64,9 +64,34 @@ class ModelProduct(Db):
         db.create_tables()
         cursor = self.conn.cursor()
         cursor.execute(
-            """UPDATE products SET name = %s, category = %s, description = %s,
-            currentstock = %s, minimumstock = %s, price = %s""", (self.data["name"],
-            self.data["description"], self.data["category"], self.data["currentstock"], self.data["minimumstock"],
-            self.data["price"],))
+            """UPDATE products SET name = %s, currentstock = %s, price = %s WHERE id = %s""", (self.data["name"],
+             self.data["currentstock"], self.data["price"], id))
+
+
+        # row = self.cursor.fetchone()
+
+        # if not row or row[0] == id:
+        #     if "name" in self.data:
+        #         self.cursor.execute(
+        #             "UPDATE products SET name = %s", (self.data["name"],),
+        #         )
+        #     # if "category" in self.data:
+        #     #    self.cursor.execute(
+        #     #        "UPDATE products SET category = %s",
+        #     #        (self.data["category"],),
+        #     #    )
+        #     if "price" in self.data:
+        #        self.cursor.execute(
+        #            "UPDATE products SET price = %s",
+        #            (self.data["price"],),
+        #        )
+        #     if "currentstock" in self.data:
+        #        self.cursor.execute(
+        #            "UPDATE products SET currentstock = %s",
+        #            (self.data["currentstock"],),
+        #        )
+            
+
+        print(self.data)
         self.conn.commit()
         self.conn.close()

@@ -47,8 +47,11 @@ class AdminSignup(Resource):
     """docstring for AdminSignup."""
     def post(self):
         data = request.get_json()
-        AuthValidate.validate_empty_data(self, data)
+        AuthValidate.validate_missing_key_value(self
+        , data)
         AuthValidate.validate_data(self, data)
+        AuthValidate.validate_invalid_entry(self,data)
+        AuthValidate.validate_empty_data(self, data)
         AuthValidate.validate_details(self, data)
         name = data["name"]
         email = data["email"]
@@ -68,10 +71,11 @@ class AttSignup(Resource):
     @token_required
     def post(current_user, self):
         data = request.get_json()
-        # print(data)
         if current_user and current_user["role"] == "admin":
-            AuthValidate.validate_empty_data(self, data)
+            AuthValidate.validate_missing_key_value(self, data)
             AuthValidate.validate_data(self, data)
+            AuthValidate.validate_invalid_entry(self,data)
+            AuthValidate.validate_empty_data(self, data)
             AuthValidate.validate_details(self, data)
             name = data["name"]
             email = data["email"]
@@ -80,7 +84,7 @@ class AttSignup(Resource):
             attendant = UserModel(name, email, password, role)
             attendant.saveAdmin()
             message = make_response(jsonify({
-            "Message": "attendant successfully registered",
+            "Message": "user successfully registered",
             "name": name,
             "email": email,
             "role": role
@@ -136,8 +140,9 @@ class AttLogin(Resource):
                             "Message": "attendant successfully logged in",
 						     "token": token.decode("UTF-8")}), 200)
             # return make_response(jsonify({
-            #                 "Message": "Check your credentials",
-            #                     "Status": "Failed"}), 200)
+            #     "Message": "Login failed, wrong entries"
+            # }
+            # ), 403)
 
 
 
@@ -224,7 +229,7 @@ class SingleProduct(Resource):
         '''deletes a selected product'''
         product = ModelProduct()
         products = product.get()
-        sales = ModelSales.get(self)
+        sales = ModelSales.get_all_sales(self)
         if current_user["role"] != "admin":
             return make_response(jsonify({
                 "Message": "You have no authorization to delete a product"
@@ -255,10 +260,9 @@ class SingleProduct(Resource):
             }), 403)
         data = request.get_json()
         name = data["name"]
-        category = data["category"]
-        description = data["description"]
+  
         currentstock = data["currentstock"]
-        minimumstock = data["minimumstock"]
+       
         price = data["price"]
 
         product = ModelProduct(data)
@@ -272,7 +276,7 @@ class SingleProduct(Resource):
             ), 404)
 
         for item in products:
-            if int(id) == item["id"]:
+            if int(id) == int(item["id"]):
                 product.update(id)
                 return make_response(jsonify({
                     "Message": "product has been updated successfully",
@@ -307,6 +311,7 @@ class Sale(Resource):
                 if product["id"] == id:
                     userid = current_user["id"]
                     mysale = ModelSales(userid, id)
+                    # currentstock = data["currentstock"]
                     if int(product["currentstock"]) > 0:
                         product["currentstock"] = product["currentstock"] - 1
                     else:
@@ -320,10 +325,10 @@ class Sale(Resource):
                     productID = id
                     update_product = ModelProduct(product)
                     update_product.update(productID)
-                    new_sale = ModelSales.get(self)
+                    new_sale = ModelSales.get_all_sales(self)
                     for sale in new_sale:
                         if product["id"] == new_sale:
-                            price = int(product["price"])
+                            price = int(product["price"]) * data["currentstock"]
                             total = total + price
                     if product["currentstock"] < int(product["minimumstock"]):
                         return make_response(jsonify({
@@ -345,36 +350,43 @@ class Sale(Resource):
         '''getting all sales made'''
         if current_user and current_user["role"] == "admin":
             saleitem = ModelSales()
-            sales = saleitem.get()
-            if len(sales) > 0:
-                message = make_response(jsonify({
-                    "Message": "Success",
-                    "Sales": saleitem.get()
+            sales = saleitem.get_all_sales()
+              
+            if sales:
+                return make_response(jsonify({
+                    "Message": "sale retrieval is successful",
+                    "sales": sales
                 }), 200)
-                return message
+            else:
+                return make_response(jsonify({
+                    "Message": "unfortunately no sale has been made"
+                }), 404)
+        else:
             return make_response(jsonify({
-                "Message":  "No sales have been made"
-            }), 404)
-        return make_response(jsonify({
-            "Message": "Login as admin to access sales"
-        }), 401)
+                "Message": "viewing sales is reserved for the admin",
 
+            }), 401)
+                  
+            
+            
+                
 class SingleSale(Resource):
     @token_required
     def get(current_user, self, saleid):
-        self.saleitem = ModelSales.get(self)
-        for sale in self.saleitem:
-            if int(id) == sale["id"]:
-                if current_user and current_user["role"] == "admin" or current_user["role"] == "attendant":
-                
-                    return make_response(jsonify({
-                        "Message": "Retrieval successful",
-                        "Sale": sale
-                    }), 200)
-                    
-        
-
-            else:
+        if current_user:
+            saleitem = ModelSales()
+            sales = saleitem.get_all_sales()
+            if not sales:
                 return make_response(jsonify({
-                    "Message": "Sale record does not exist"
-                }), 404)
+                            "Message": "No avilable sales"
+                        }), 404)
+            for singlesale in sales:
+                if int(saleid)  == int(singlesale["saleid"]):
+                    print(saleid)
+                    return make_response(jsonify({
+                        "Message": "Sale  retrieval is successful",
+                        "sale": singlesale
+                    }), 200)
+            
+
+                        

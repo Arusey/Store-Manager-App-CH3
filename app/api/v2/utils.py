@@ -10,6 +10,39 @@ class AuthValidate(object):
     def __init__(self, data):
         self.data = data
     """docstring for AuthValidate."""
+    def validate_missing_key_value(self, data):
+        if "name" not in data:
+            Response = "Key name is missing"
+            abort(400, Response)
+        if "email" not in data:
+            Response = "Key email is missing"
+            abort(400, Response)
+        if "password" not in data:
+            Response = "Key password is missing"
+            abort(400, Response)
+        if "role" not in data:
+            Response = "Key role is missing"
+            abort(400, Response)
+    def validate_data(self, data):
+        if type(data["name"]) is not str or type(data["email"]) is not str or type(data["password"]) is not str or type(data["role"]) is not str:
+            Response = "You cannot insert an integer"
+            abort(400, Response)
+
+    def validate_invalid_entry(self, data):
+        
+
+        if " " in data["name"]:
+            Response = "Remove space in name"
+            abort(400, Response)
+        if " " in data["email"]:
+            Response = "Remove space in email"
+            abort(400, Response)
+        if " " in data["password"]:
+            Response = "Remove space in password"
+            abort(400, Response)
+        if " " in data["role"]:
+            Response = "Remove space in role"
+            abort(400, Response)
     def validate_empty_data(self, data):
         if data["name"] =="" or data["email"] =="" or data["password"] =="" or data["role"] =="":
             Response ="Missing credentials, check again"
@@ -46,18 +79,7 @@ class AuthValidate(object):
             abort(400, Response)
 
 
-        if " " in data["email"]:
-            Response = "Remove space in email"
-            abort(400, Response)
-        if " " in data["name"]:
-            Response = "Remove space in name"
-            abort(400, Response)
-        if " " in data["password"]:
-            Response = "Remove space in password"
-            abort(400, Response)
-        if " " in data["role"]:
-            Response = "Remove space in role"
-            abort(400, Response)
+        
     def validate_datatypes(self, data):
         if type(self.data["name"]) is not str:
             Response = "Only string characters allowed for name"
@@ -71,6 +93,14 @@ class AuthValidate(object):
         if type(self.data["role"]) is not str:
             Response = "Only string characters are allowed for role"
             abort(400, Response)
+
+    def validate_missing_key(self, data):
+        '''Checks for missing data keys in data passed during product registration'''
+        if "name" not in data or "category" not in data or "description" not in data or "currentstock" not in data or "minimumstock" not in data or "price" not in data:
+            Response = "Must enter all product details"
+            abort(400, Response)
+
+       
 
 
 

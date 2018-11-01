@@ -4,7 +4,6 @@ attrs==18.2.0
 Click==7.0
 Flask==1.0.2
 Flask-RESTful==0.3.6
-ItsDangerous==1.0.0
 Jinja2==2.10
 MarkupSafe==1.0
 more-itertools==4.3.0

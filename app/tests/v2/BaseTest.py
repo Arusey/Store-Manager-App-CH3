@@ -15,30 +15,21 @@ class TestAllEndpoints(unittest.TestCase):
         self.db.create_tables()
         self.app = create_app(config_name="testing")
         self.test_client = self.app.test_client()
-        self.administrator = json.dumps({
-            "name": "mercy",
-            "email": "mercy@email.com",
-            "password": "Mercy@123",
-            "role": "admin"
-        })
+
         self.admin_login = json.dumps({
-            "email": "mercy@email.com",
-            "password": "Mercy@123"
+            "email": "tony@email.com",
+            "password": "kevin@123"
         })
-        admin = self.test_client.post("/api/v2/auth/adminsignup",
-                                        data=self.administrator,
-                                        headers={
-                                            'content-type': 'application/json'
-                                        })
+
         login_admin = self.test_client.post("/api/v2/auth/adminlogin",
                                             data=self.admin_login,
                                             headers={
                                                 'content-type': 'application/json'
                                             })
 
-        print(json.loads(admin.data.decode()))
-        # self.token_for_admin = json.loads(login_admin.data.decode())
+   
         self.data = json.loads(login_admin.data.decode())
+        print(login_admin.data)
         self.token_for_admin = self.data["token"]
 
 
@@ -64,7 +55,6 @@ class TestAllEndpoints(unittest.TestCase):
         self.data = json.loads(login_attendant.data.decode())
         print(json.loads(login_attendant.data.decode()))
         self.token_for_attendant = self.data["token"]
-        # self.token_for_attendant = json.loads(login_attendant.data.decode())
 
 
         self.product = json.dumps(
