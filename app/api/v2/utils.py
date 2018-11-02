@@ -62,6 +62,9 @@ class AuthValidate(object):
         if not valid_mail:
             Response = "The email is not valid"
             abort(400, Response)
+        # if not re.match(r"(^[a-zA-Z0-9_.]+@[a-zA-Z0-9-]+\.[a-z]+$)", self.data["email"]):
+        #     Response = "Email must have a fullstop"
+        #     abort(400, Response)
         elif len(data["password"]) < 6 or len(data["password"]) > 12:
             Response = "Password must be long than 6 characters or less than 12"
             abort(400, Response)

@@ -1,4 +1,4 @@
-from .BaseTest import *
+from .BaseTest import TestAllEndpoints
 
 class TestProducts(TestAllEndpoints):
     def test_post_products(self):
@@ -145,9 +145,3 @@ class TestProducts(TestAllEndpoints):
         message = json.loads(response.data)
         self.assertEqual(message["message"], "Ensure no spaces when entering detail")
         self.assertEqual(response.status_code, 400)
-        
-        
-
-    
-
-    

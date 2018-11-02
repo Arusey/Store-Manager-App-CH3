@@ -47,6 +47,7 @@ class ModelProduct(Db):
             singleproduct["price"] = list_of_keys[6]
             totalproducts.append(singleproduct)
         self.conn.commit()
+        self.conn.close()
         return totalproducts
     def delete(self, id):
         self.id = id

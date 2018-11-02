@@ -12,6 +12,7 @@ class TestAllEndpoints(unittest.TestCase):
 
     def setUp(self):
         self.db = Db()
+        self.db.collapse_tables()
         self.db.create_tables()
         self.app = create_app(config_name="testing")
         self.test_client = self.app.test_client()
@@ -94,4 +95,4 @@ class TestAllEndpoints(unittest.TestCase):
     def tearDown(self):
         '''clear all tables and data prior to next test'''
         self.db.collapse_tables()
-        self.context.pop()
+        # self.context.pop()

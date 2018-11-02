@@ -1,13 +1,16 @@
 from flask import Flask, jsonify, request, make_response
 from flask_restful import Resource
 from functools import wraps
+from flask_expects_json import expects_json
 from instance.config import Config
 import jwt
 import datetime
 
 from .models.userModel import UserModel
+from .models.databaseModel import Db
 from .models.productModel import ModelProduct
 from .models.salesModel import ModelSales
+from .my_schemas import *
 from .utils import AuthValidate, ProductValidate
 
 def token_required(func):
@@ -19,6 +22,17 @@ def token_required(func):
         current_user = None
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
+            db = Db()
+            conn = db.create_connection()
+            db.create_tables()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM badtokens WHERE token = %s", (token,)
+            )
+            if cursor.fetchone():
+                return make_response(jsonify({
+                    "Message": "Token has been invalidated, kindly login"
+                }), 403)
         if not token:
             return make_response(jsonify({
                                  "Message": "the access token is missing, Login"}, 401))
@@ -45,6 +59,7 @@ def token_required(func):
 
 class AdminSignup(Resource):
     """docstring for AdminSignup."""
+    @expects_json(user_signup_json)
     def post(self):
         data = request.get_json()
         AuthValidate.validate_missing_key_value(self
@@ -53,10 +68,10 @@ class AdminSignup(Resource):
         AuthValidate.validate_invalid_entry(self,data)
         AuthValidate.validate_empty_data(self, data)
         AuthValidate.validate_details(self, data)
-        name = data["name"]
-        email = data["email"]
+        name = data["name"].lower()
+        email = data["email"].lower()
         password = data["password"]
-        role = data["role"]
+        role = data["role"].lower()
         user = UserModel(name, email, password, role)
         user.saveAdmin()
         message = make_response(jsonify({
@@ -69,6 +84,7 @@ class AdminSignup(Resource):
 class AttSignup(Resource):
     """docstring for attendant Signup."""
     @token_required
+    @expects_json(user_signup_json)
     def post(current_user, self):
         data = request.get_json()
         if current_user and current_user["role"] == "admin":
@@ -77,10 +93,10 @@ class AttSignup(Resource):
             AuthValidate.validate_invalid_entry(self,data)
             AuthValidate.validate_empty_data(self, data)
             AuthValidate.validate_details(self, data)
-            name = data["name"]
-            email = data["email"]
+            name = data["name"].lower()
+            email = data["email"].lower()
             password = data["password"]
-            role = data["role"]
+            role = data["role"].lower()
             attendant = UserModel(name, email, password, role)
             attendant.saveAdmin()
             message = make_response(jsonify({
@@ -96,11 +112,12 @@ class AttSignup(Resource):
         return message
 class AdminLogin(Resource):
     '''docstring for administrator login'''
+    @expects_json(user_login_json)
     def post(self):
         '''login as user and encode a jwt token'''
         data = request.get_json()
-        email = data["email"]
-        password = data["password"]
+        email = data["email"].lower()
+        password = data["password"].lower()
         users = UserModel.get(self)
         for user in users:
             if email == user["email"] and password == user['password']:
@@ -121,6 +138,7 @@ class AdminLogin(Resource):
             ), 403)
 class AttLogin(Resource):
     '''docstring for attendant login'''
+    @expects_json(user_login_json)
     def post(self):
         '''login as attendant and encode a jwt token'''
         data = request.get_json()
@@ -137,21 +155,16 @@ class AttLogin(Resource):
                                                 (minutes=54567)
                 }, Config.SECRET_KEY, algorithm='HS256')
                 return make_response(jsonify({
-                            "Message": "attendant successfully logged in",
+                            "Message": "user successfully logged in",
 						     "token": token.decode("UTF-8")}), 200)
             # return make_response(jsonify({
             #     "Message": "Login failed, wrong entries"
             # }
             # ), 403)
 
-
-
-
-
-
-
 class Product(Resource):
     @token_required
+    @expects_json(products_json)
     def post(current_user, self):
         '''endpoint for posting a product'''
         if current_user and current_user["role"] != "admin":
@@ -168,9 +181,9 @@ class Product(Resource):
         ProductValidate.validate_products_data(self, data)
         
 
-        name = data["name"]
-        category = data["category"]
-        description = data["description"]
+        name = data["name"].lower()
+        category = data["category"].lower()
+        description = data["description"].lower()
         currentstock = data["currentstock"]
         minimumstock = data["minimumstock"]
         price = data["price"]
@@ -252,6 +265,7 @@ class SingleProduct(Resource):
         return message
 
     @token_required
+    @expects_json(update_json)
     def put(current_user, self, id):
         '''update details in product'''
         if current_user and current_user["role"] != "admin":
@@ -287,6 +301,7 @@ class SingleProduct(Resource):
         }), 404)
 class Sale(Resource):
     @token_required
+    @expects_json(sales_json)
     def post(current_user, self):
         total = 0
         data = request.get_json()
@@ -378,7 +393,7 @@ class SingleSale(Resource):
             sales = saleitem.get_all_sales()
             if not sales:
                 return make_response(jsonify({
-                            "Message": "No avilable sales"
+                            "Message": "No available sales"
                         }), 404)
             for singlesale in sales:
                 if int(saleid)  == int(singlesale["saleid"]):
@@ -388,5 +403,25 @@ class SingleSale(Resource):
                         "sale": singlesale
                     }), 200)
             
+
+class Logout(Resource):
+    @token_required
+    def post(current_user, self):
+        try:
+            if current_user:
+                if 'x-access-token' in request.headers:
+                    token = request.headers["x-access-token"]
+                    thisuser = UserModel()
+                    date = datetime.datetime.now()
+                    thisuser.user_logout(token, date)
+                    return make_response(jsonify({
+                        "Message": "Log out, see you later"
+                    }), 200)
+        except Exception as e:
+            return make_response(jsonify({
+                "Message": "Failed to blacklist token"
+            }), 403)
+
+
 
                         

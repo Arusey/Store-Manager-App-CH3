@@ -10,11 +10,12 @@ class UserModel(Db):
         self.email = email
         self.password = password
         self.role = role
+        self.db = Db()
+        self.conn = self.db.create_connection()
+        self.db.create_tables
+        self.cursor = self.conn.cursor() 
 
-        db = Db()
-        db.create_tables()
-        self.conn = db.create_connection()
-
+       
     def saveAdmin(self):
         cursor = self.conn.cursor()
         cursor.execute(
@@ -46,6 +47,14 @@ class UserModel(Db):
             singleuser["password"] = list_of_keys[3]
             singleuser["role"] = list_of_keys[4]
             dbusers.append(singleuser)
-        cursor.close()
+        
         self.conn.close()
         return dbusers
+
+    def user_logout(self, token, date):
+        self.cursor.execute(
+            "INSERT INTO badtokens(token, date) VALUES (%s, %s)",
+            (token, date,)
+        )
+        self.conn.commit()
+        self.conn.close()

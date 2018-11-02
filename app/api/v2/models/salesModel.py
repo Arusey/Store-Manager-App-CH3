@@ -48,5 +48,8 @@ class ModelSales(Db):
             sale['attendantname'] = single_item[7]
             sales.append(sale)
 
+        self.conn.commit()
+        self.conn.close()
+
         # print(result)
         return sales

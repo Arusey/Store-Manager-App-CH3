@@ -1,6 +1,6 @@
 from flask import Flask, Blueprint
 from flask_restful import Api, Resource
-from .views import  AdminSignup, AdminLogin, Product, SingleProduct, Sale, AttSignup, AttLogin, SingleSale
+from .views import  AdminSignup, AdminLogin, Product, SingleProduct, Sale, AttSignup, AttLogin, SingleSale, Logout
 '''creates our Blueprint'''
 mydbblue = Blueprint("api", __name__, url_prefix="/api/v2")
 
@@ -14,3 +14,4 @@ api.add_resource(Sale, '/sales')
 api.add_resource(SingleSale, '/sales/<saleid>')
 api.add_resource(AttSignup, '/auth/attsignup')
 api.add_resource(AttLogin, '/auth/login')
+api.add_resource(Logout, '/auth/logout')

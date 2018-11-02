@@ -2,7 +2,7 @@ import psycopg2
 from flask import jsonify
 import os
 from instance.config import Config
-
+from sys import modules
 
 class Db(object):
     def __init__(self):
@@ -15,15 +15,21 @@ class Db(object):
 
     def create_connection(self):
         try:
+            # if "pytest" in modules:
+            #     db = "test_database"
+            # else:
+            #     db = "storemanager"
             if Config.APP_SETTINGS == "testing":
-                self.conn = psycopg2.connect(database='test_database')
+                db = 'test_database'
+                self.conn = psycopg2.connect(database=db)
+
             if Config.APP_SETTINGS == 'development':
-                self.conn = psycopg2.connect(
-                    database=self.dbName,
-                    host=self.dbHost,
-                    password=self.dbPassword
-                )
+                db = self.dbName
+                self.conn = psycopg2.connect(database=db)
+            self.conn = psycopg2.connect(
+               os.environ['DATABASE_URL'], sslmode='require')
             return self.conn
+
         except Exception as e:
             print(e)
             return jsonify(
@@ -57,6 +63,11 @@ class Db(object):
             productid int REFERENCES products(id) ON DELETE RESTRICT
 
             
+            )""", 
+            """CREATE TABLE IF NOT EXISTS badtokens(
+                id serial PRIMARY KEY,
+                token varchar(255) NOT NULL,
+                date varchar(255) NOT NULL
             )"""
                ]
 
@@ -77,12 +88,12 @@ class Db(object):
 
     def collapse_tables(self):
         cursor = self.create_connection().cursor()
-        mysql = [
-        "DROP TABLE IF EXISTS users CASCADE",
-        "DROP TABLE IF EXISTS products CASCADE",
-        "DROP TABLE IF EXISTS sales CASCADE"
-        ]
-        for string in mysql:
-            cursor.execute(string)
+        cursor.execute(
+             "SELECT table_schema,table_name FROM information_schema.tables "
+            " WHERE table_schema = 'public' ORDER BY table_schema,table_name"
+        )
+        rows = cursor.fetchall()
+        for row in rows:
+            cursor.execute("drop table "+row[1] + " cascade")
         self.conn.commit()
         self.conn.close()
